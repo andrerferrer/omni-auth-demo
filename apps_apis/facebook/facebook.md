@@ -1,10 +1,10 @@
 Vá em https://developers.facebook.com/apps/ e clique em `Criar Aplicativo`.
 
-![facebook-app](https://i.imgur.com/YuJqP1k.gif)
+![facebook-app](pictures/facebook-app.gif)
 
-[Cheque aqui](https://imgur.com/a/1HjbWGN) o passo-a-passo.
+[Cheque aqui](pictures/) o passo-a-passo.
 
-![tela do facebook app](https://i.imgur.com/RfGhFIN.png)
+![tela do facebook app](pictures/10.PNG)
 Copie o ID e a Chave Secreta e adiciona no seu `.env`.
 
 ```
