@@ -80,7 +80,7 @@ end
 
 ---
 ### Set everything up for Facebook
-#### Add the gem to the Gemfile
+#### Add the [gem](https://github.com/simi/omniauth-facebook#omniauth-facebook--) to the Gemfile.
 ```ruby
 # Gemfile
 gem 'omniauth-facebook'
