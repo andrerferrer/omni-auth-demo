@@ -79,8 +79,16 @@ end
 
 ---
 ### Set everything up for Facebook
-#### Add the gem
+#### Add the gem to the Gemfile
+```ruby
+# Gemfile
+gem 'omniauth-facebook'
+```
+
+Remember to `bundle install`.
+
 #### Set up the API key
+
 
 ### Ensure that the `User` has the provider
 ```ruby
