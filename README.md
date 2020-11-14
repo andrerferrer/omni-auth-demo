@@ -106,7 +106,7 @@ end
 ```ruby
 # config/initializers/devise.rb
 Devise.setup do |config|
-  config.omniauth :facebook, ENV["FB_ID"], ENV["FB_SECRET"],
+  config.omniauth :facebook, ENV["FACEBOOK_ID"], ENV["FACEBOOK_PWD"],
     scope: 'email',
     info_fields: 'email, first_name, last_name',
     image_size: 'square',  # 50x50, guaranteed ratio
