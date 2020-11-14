@@ -139,9 +139,11 @@ end
 
 ### To Be Done
 
-show the picture in the view with a helper
+#### show the picture in the view with a helper
 ```erb
 <% avatar_url = current_user.picture_url || "http://placehold.it/30x30" %>
 <%= image_tag avatar_url %>
 
 ```
+
+#### Improve the user callback into a service
