@@ -1,110 +1,138 @@
 ## Goal
-This is an app to teach how to implement basic Authentication in Rails using the [devise gem](https://github.com/heartcombo/devise).
+This is an app to teach how to implement Omni Authentication login (with Facebook, Spotify etc) in Rails using the [devise gem](https://github.com/heartcombo/devise).
+
+This demo assumes that you have the `Devise` gem set up. If you don't, [check this out](https://github.com/andrerferrer/devise-demo#goal).
+
 
 ## Setup
 
-### Add devise gem
+### Add the attributes (we will use later) to the User (if we don't have them already)
+```
+rails g migration AddOmniauthToUsers \
+    provider uid picture_url first_name last_name token token_expiry:datetime
+rails db:migrate
+```
+
+### Ensure that the `User` has omniauth
 ```ruby
-# Gemfile
-gem 'devise'
+# app/models/user.rb
+class User < ApplicationRecord
+  devise :omniauthable, omniauth_providers: [:facebook] # add this line
+end
 ```
 
-You need to `bundle install` after that.
+### Prepare the app to receive the callback
 
-### rails install devise
+#### Prepare the routes
 ```ruby
-rails generate devise:install
+# config/routes.rb
+Rails.application.routes.draw do
+  devise_for :users,
+    controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
+end
 ```
 
-It will show you some manual configs that we must do.
-```
-Some setup you must do manually if you haven't yet:
-
-  1. Ensure you have defined default url options in your environments files. Here
-     is an example of default_url_options appropriate for a development environment
-     in config/environments/development.rb:
-
-       config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
-
-     In production, :host should be set to the actual host of your application.
-
-  2. Ensure you have defined root_url to *something* in your config/routes.rb.
-     For example:
-
-       root to: "home#index"
-
-  3. Ensure you have flash messages in app/views/layouts/application.html.erb.
-     For example:
-
-       <p class="notice"><%= notice %></p>
-       <p class="alert"><%= alert %></p>
-
-  4. You can copy Devise views (for customization) to your app by running:
-
-       rails g devise:views
-
-```
-
-### Generate the user (or whatever) model that will use Devise
+#### Create the controller
 ```ruby
-rails generate devise User
+# app/controllers/users/omniauth_callbacks_controller.rb
+# Create this controller
+
+class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+end
 ```
 
-### Add some navigation for the user
-```
-<% if user_signed_in? %>
-  <%= link_to "Edit my account", edit_user_registration_path  %>
-  <%= link_to "Sign out", destroy_user_session_path, method: :delete %>
-<% else %>
-  <%= link_to "Log In", new_user_session_path %>
-  <%= link_to "Sign up", new_user_registration_path %>
-<% end %>
-```
-
-### Implement the White-list approach
-
-The white-list approach states that we'll block everything and ONLY allow what we specifically state as allowed.
-
-To do so, all we have to do is to add the `skip` on the right controller.
-
-e.g.
+#### Add the callback method to the User
 ```ruby
-class PagesController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:home]
+# app/models/user.rb
+class User < ApplicationRecord
+  def self.find_for_oauth(auth)
+    # Create the user params
+    user_params = auth.slice("provider", "uid")
+    user_params.merge! auth.info.slice("email", "first_name", "last_name")
+    user_params[:picture_url] = auth.info.image
+    user_params[:token] = auth.credentials.token
+    user_params[:token_expiry] = Time.at(auth.credentials.expires_at)
+    user_params = user_params.to_h
+    # Finish creating the user params
 
-  def home
+    # Find the user if there was a log in
+    user = User.find_by(provider: auth.provider, uid: auth.uid)
+
+    # If the User did a regular sign up in the past, find it
+    user ||= User.find_by(email: auth.info.email)
+
+    # If we had a user, update it
+    if user
+      user.update(user_params)
+    # Else, create a new user with the params that come from the app callback
+    else
+      user = User.new(user_params)
+      # create a fake password for validation
+      user.password = Devise.friendly_token[0,20]
+      user.save
+    end
+
+    return user
   end
 end
 ```
 
-## Adding attributes to the user
+---
+### Set everything up for Facebook
+#### Add the gem
+#### Set up the API key
+#### Config Devise
+```ruby
+# config/initializers/devise.rb
+Devise.setup do |config|
+  config.omniauth :facebook, ENV["FB_ID"], ENV["FB_SECRET"],
+    scope: 'email',
+    info_fields: 'email, first_name, last_name',
+    image_size: 'square',  # 50x50, guaranteed ratio
+    secure_image_url: true
+end
 
-If we want to add a nickname to the user, what should we do?
-
-1. Generate and run the migration
 ```
-rails g migration AddNicknameToUsers nickname:string
-rails db:migrate
-```
 
-2. Make devise handle it in the ApplicationController
-Add this to you `app/controllers/application_controller.rb`.
+[Read the omniauth config if you want to dive deeper.](https://github.com/simi/omniauth-facebook#configuring)
+
+#### Create the method in the Users::OmniauthCallbacksController
 
 ```ruby
-# Config devise params if we have a devise controller running
-before_action :config_devise_params, if: :devise_controller?
+# app/controllers/users/omniauth_callbacks_controller.rb
+class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  def facebook
+    user = User.find_for_facebook_oauth(request.env['omniauth.auth'])
 
-protected
-
-def config_devise_params
-  # This allows nickname to be added to the sign up
-  devise_parameter_sanitizer.permit(:sign_up, keys: [:nickname])
-  # This allows nickname to be added to the editting of the account
-  devise_parameter_sanitizer.permit(:account_update, keys: [:nickname])
+    if user.persisted?
+      sign_in_and_redirect user, event: :authentication
+      set_flash_message(:notice, :success, kind: 'Facebook') if is_navigational_format?
+    else
+      session['devise.facebook_data'] = request.env['omniauth.auth']
+      redirect_to new_user_registration_url
+    end
+  end
 end
 ```
 
-## Tips and Tricks
+---
+### Set everything up for Spotify
+#### Add the gem
+#### Set up the API key
+#### Config Devise
+```ruby
+# config/initializers/devise.rb
 
-* You can check if a user is logged in with `user_signed_in?`
-* You can retrieve the user that is logged in with `current_user`
+```
+
+[Read the omniauth config if you want to dive deeper.](https://github.com/simi/omniauth-facebook#configuring)
+
+
+### To Be Done
+
+show the picture in the view with a helper
+```erb
+<% avatar_url = current_user.picture_url || "http://placehold.it/30x30" %>
+<%= image_tag avatar_url %>
+
+```
