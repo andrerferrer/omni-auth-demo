@@ -150,8 +150,8 @@ end
 
 [Read the omniauth config if you want to dive deeper.](https://github.com/simi/omniauth-facebook#configuring)
 
-
-### To Be Done
+---
+### TO BE DONE
 
 #### show the picture in the view with a helper
 ```erb
