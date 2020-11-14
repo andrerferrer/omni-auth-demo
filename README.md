@@ -3,6 +3,8 @@ This is an app to teach how to implement Omni Authentication login (with Faceboo
 
 This demo assumes that you have the `Devise` gem set up. If you don't, [check this out](https://github.com/andrerferrer/devise-demo#goal).
 
+[Check my other demos here.](https://github.com/andrerferrer/dedemos#devise)
+
 You can check the Devise Omniauth overview [here](https://github.com/heartcombo/devise/wiki/OmniAuth:-Overview).
 
 ## Setup
