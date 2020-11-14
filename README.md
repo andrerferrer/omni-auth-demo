@@ -138,7 +138,7 @@ end
 
 ---
 ### Set everything up for Spotify
-#### Add the gem
+#### Add the [gem](https://github.com/icoretech/omniauth-spotify#spotify-omniauth-strategy) to the Gemfile
 #### Set up the API key
 #### Config Devise
 ```ruby
