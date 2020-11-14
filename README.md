@@ -96,7 +96,7 @@ We are assuming that the `dotenv` gem is set up.
 
 [Check how to (PT-BR)](apps_apis/facebook/facebook.md).
 
-### Ensure that the `User` has the provider
+#### Ensure that the `User` has the provider
 ```ruby
 # app/models/user.rb
 class User < ApplicationRecord
