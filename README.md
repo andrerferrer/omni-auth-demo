@@ -17,7 +17,7 @@ rails db:migrate
 ```ruby
 # app/models/user.rb
 class User < ApplicationRecord
-  devise :omniauthable, omniauth_providers: [:facebook] # add this line
+  devise :omniauthable
 end
 ```
 
@@ -81,6 +81,15 @@ end
 ### Set everything up for Facebook
 #### Add the gem
 #### Set up the API key
+
+### Ensure that the `User` has the provider
+```ruby
+# app/models/user.rb
+class User < ApplicationRecord
+  devise :omniauthable, omniauth_providers: [:facebook] # add this line
+end
+```
+
 #### Config Devise
 ```ruby
 # config/initializers/devise.rb
