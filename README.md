@@ -89,6 +89,9 @@ Remember to `bundle install`.
 
 #### Set up the API key
 
+We are assuming that the `dotenv` gem is set up.
+
+[Check how to (PT-BR)](apps_apis/facebook.md).
 
 ### Ensure that the `User` has the provider
 ```ruby
