@@ -94,9 +94,9 @@ Remember to `bundle install`.
 
 We are assuming that the `dotenv` gem is set up.
 
-[Check how to (PT-BR)](apps_apis/facebook/facebook.md).
+[Check how to here (PT-BR)](apps_apis/facebook/facebook.md).
 
-### Ensure that the `User` has the provider
+#### Ensure that the `User` has the provider
 ```ruby
 # app/models/user.rb
 class User < ApplicationRecord
@@ -139,13 +139,57 @@ end
 ```
 
 ---
-### TO BE DONE ~~Set everything up for Spotify~~
+### Set everything up for Spotify
 #### Add the [gem](https://github.com/icoretech/omniauth-spotify#spotify-omniauth-strategy) to the Gemfile
+```ruby
+# Gemfile
+gem 'omniauth-spotify'
+```
+
+Remember to `bundle install`.
+
 #### Set up the API key
+
+We are assuming that the `dotenv` gem is set up.
+
+[Check how to here](apps_apis/spotify/spotify.md).
+
+#### Ensure that the `User` has the provider
+```ruby
+# app/models/user.rb
+class User < ApplicationRecord
+  devise :omniauthable, omniauth_providers: [:spotify] # add this line
+end
+```
+
 #### Config Devise
 ```ruby
 # config/initializers/devise.rb
+Devise.setup do |config|
+  config.omniauth :spotify, ENV["SPOTIFY_ID"], ENV["SPOTIFY_PWD"], scope: %w(
+    playlist-read-private
+    user-read-private
+    user-read-email
+  ).join(' ')
+end
+```
+#### Create the method in the Users::OmniauthCallbacksController
 
+```ruby
+# app/controllers/users/omniauth_callbacks_controller.rb
+class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  def spotify
+    user = User.find_for_oauth(request.env['omniauth.auth'])
+
+    if user.persisted?
+      sign_in_and_redirect user, event: :authentication
+      set_flash_message(:notice, :success, kind: 'Spotify') if is_navigational_format?
+    else
+      session['devise.spotify_data'] = request.env['omniauth.auth']
+      redirect_to new_user_registration_url
+    end
+  end
+end
 ```
 
 [Read the omniauth config if you want to dive deeper.](https://github.com/simi/omniauth-facebook#configuring)
@@ -153,7 +197,7 @@ end
 ---
 ### TO BE DONE
 
-#### show the picture in the view with a helper
+#### Show the picture from the app with a helper
 ```erb
 <% avatar_url = current_user.picture_url || "http://placehold.it/30x30" %>
 <%= image_tag avatar_url %>
