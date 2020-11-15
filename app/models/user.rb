@@ -3,7 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, 
-         :omniauthable, omniauth_providers: [:facebook] # add this line
+         :omniauthable, omniauth_providers: [:facebook, :spotify] # add this line
 
   def self.find_for_oauth(auth)
     # Create the user params
