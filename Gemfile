@@ -66,3 +66,4 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem 'omniauth-facebook'
 gem 'omniauth-spotify'
+gem 'omniauth-rails_csrf_protection'
